@@ -1,10 +1,10 @@
 import streamlit as st
-import time
 
-st.set_page_config(page_title="FIAP Mega Simulado", page_icon="🎮", layout="centered")
+# Configuração da página para ocupar mais espaço na tela (layout "wide")
+st.set_page_config(page_title="FIAP Mega Simulado", page_icon="🚀", layout="wide")
 
 # ==========================================
-# BANCO DE QUESTÕES (Dividido por Fases)
+# BANCO DE QUESTÕES 
 # ==========================================
 fase1_pandas = [
     {"q": "O que a função `describe()` faz em um DataFrame do Pandas?", "opts": ["Lista os tipos de dados de cada coluna.", "Gera um resumo estatístico das colunas numéricas.", "Descreve as 5 primeiras linhas.", "Remove os valores nulos."], "ans": "Gera um resumo estatístico das colunas numéricas."},
@@ -46,111 +46,151 @@ fase3_story = [
 ]
 
 # ==========================================
-# FUNÇÃO PARA RENDERIZAR QUESTÕES COM CARDS
+# FUNÇÃO: RENDERIZAR QUESTÕES
 # ==========================================
 def renderizar_questoes(lista_questoes, prefixo_chave):
     pontos_fase = 0
+    # Criamos 2 colunas para as perguntas não ficarem tão "esticadas" na tela larga
+    col1, col2 = st.columns(2)
+    
     for i, q in enumerate(lista_questoes):
-        # Cria um "card" visual para cada pergunta usando container
-        with st.container(border=True):
-            st.markdown(f"**Questão {i+1}:** {q['q']}")
-            
-            # Gerencia o estado de resposta desta pergunta específica
-            chave = f"{prefixo_chave}_{i}"
-            if chave not in st.session_state:
-                st.session_state[chave] = None
+        # Alterna as perguntas entre a coluna 1 e 2
+        coluna_atual = col1 if i % 2 == 0 else col2
+        
+        with coluna_atual:
+            with st.container(border=True):
+                st.markdown(f"**{i+1}.** {q['q']}")
                 
-            resposta = st.radio("Escolha:", q['opts'], key=f"radio_{chave}", index=None, label_visibility="collapsed")
-            
-            if resposta:
-                if resposta == q['ans']:
-                    st.success("✅ **Correto!** Mandou bem.")
-                    pontos_fase += 1
-                else:
-                    st.error(f"❌ **Errou.** A correta era: **{q['ans']}**")
+                chave = f"{prefixo_chave}_{i}"
+                if chave not in st.session_state:
+                    st.session_state[chave] = None
+                    
+                resposta = st.radio("Escolha:", q['opts'], key=f"radio_{chave}", index=None, label_visibility="collapsed")
+                
+                if resposta:
+                    if resposta == q['ans']:
+                        st.success("✅ Acertou!")
+                        pontos_fase += 1
+                    else:
+                        st.error(f"❌ Errou. Correta: **{q['ans']}**")
     return pontos_fase
 
 # ==========================================
 # INTERFACE PRINCIPAL
 # ==========================================
-st.title("🎮 FIAP: Mega Simulado")
-st.write("Navegue pelas abas abaixo como se fossem Fases de um jogo. Leia os cards de teoria e detone nas questões!")
+st.title("🚀 Hub de Revisão FIAP: Data Analytics")
+st.markdown("Bem-vindo(a)! Revise os **exemplos práticos** nos cards coloridos e depois desça para testar seus conhecimentos.")
 
-# Criando as 3 Fases (Abas)
 fase1, fase2, fase3 = st.tabs(["🐼 FASE 1: Pandas", "🤖 FASE 2: ML & NLP", "📊 FASE 3: Storytelling"])
 
-# ----------------- FASE 1 -----------------
+# ----------------- FASE 1: PANDAS -----------------
 with fase1:
-    st.header("O Território do Pandas")
-    st.write("Abra os cards abaixo para relembrar a prática antes de responder:")
+    st.header("1. O Território do Pandas")
     
-    # Cards Dinâmicos de Teoria (Expanders)
-    col1, col2 = st.columns(2)
-    with col1:
-        with st.expander("🔍 O que faz o `info()`?", expanded=False):
-            st.info("**O Raio-X Estrutural:**\nMostra o 'esqueleto' da sua tabela: quantas colunas existem, o tipo de cada dado (texto, número) e se há dados nulos faltando.")
-    with col2:
-        with st.expander("🧮 O que faz o `describe()`?", expanded=False):
-            st.warning("**O Raio-X Matemático:**\nPega as colunas numéricas e cospe a estatística de uma vez: média, valor mínimo, valor máximo e quartis (25%, 50%, 75%).")
+    # Linha 1 de Cards Teóricos
+    c1, c2, c3 = st.columns(3)
+    
+    with c1:
+        with st.container(border=True):
+            st.info("🔍 **O Raio-X (`info` vs `describe`)**")
+            st.markdown("`info()` mostra colunas, nulos e se é texto/número. `describe()` faz a matemática (média, max).")
+            st.code("# Traz tipos de dados e nulos\ndf.info()\n\n# Traz média, min, max, quartis\ndf.describe()", language="python")
             
-    with st.expander("🧭 O temido 'axis' (Eixos)", expanded=False):
-        st.error("**0 = Linhas | 1 = Colunas**\nAo usar `df.drop('Idade', axis=1)`, o Pandas olha para o horizonte (colunas) e deleta a coluna inteira. Se usasse `axis=0`, ele procuraria uma linha chamada 'Idade' e daria erro.")
+    with c2:
+        with st.container(border=True):
+            st.warning("🧭 **Eixos (`axis`)**")
+            st.markdown("O maior motivo de erros! **0 = Linhas**, **1 = Colunas**.")
+            st.code("# Deleta a COLUNA inteira 'Salario'\ndf.drop('Salario', axis=1)\n\n# Deleta a LINHA de índice 0\ndf.drop(0, axis=0)", language="python")
+
+    with c3:
+        with st.container(border=True):
+            st.error("🎯 **Filtros (`loc` vs `iloc`)**")
+            st.markdown("`loc` busca pelo **Nome** (rótulo). `iloc` busca pela **Posição** (número do índice).")
+            st.code("# Pega a linha que se chama 'Brasil'\ndf.loc['Brasil']\n\n# Pega a linha na posição número 0\ndf.iloc[0]", language="python")
+
+    # Linha 2 de Cards Teóricos
+    with st.container(border=True):
+        st.success("🤝 **Agrupamentos (`groupby`) na prática**")
+        st.markdown("Sempre que usar groupby, você precisa de uma função matemática depois (sum, mean, count) para agregar os dados.")
+        st.code("# Exemplo prático: Qual estado comprou mais?\ndf.groupby('Estado')['Vendas'].sum()\n\n# Resultado imaginário:\n# SP    50000\n# RJ    35000", language="python")
 
     st.divider()
-    st.subheader("📝 Desafio da Fase 1")
+    st.subheader("📝 Questões da Fase 1")
     pts1 = renderizar_questoes(fase1_pandas, "f1")
 
-# ----------------- FASE 2 -----------------
+# ----------------- FASE 2: ML & NLP -----------------
 with fase2:
-    st.header("Machine Learning e NLP")
+    st.header("2. Machine Learning e Linguagem (NLP)")
     
-    with st.expander("🎯 Entendendo o DBSCAN", expanded=False):
-        st.success("**Como ele pensa?**\nEle acha padrões por proximidade (densidade). Pontos muito próximos viram um Cluster (grupo). Um ponto isolado lá longe é marcado como Ruído (Outlier). Não precisa dizer a ele quantos grupos formar!")
-        
-    with st.expander("🎒 Bag of Words & Stop Words", expanded=False):
-        st.info("**Bag of Words:** Joga a frase num saco e devolve a contagem: `{'prova': 2, 'boa': 1}`. A ordem não importa.\n\n**Stop Words:** Joga no lixo palavras como 'a', 'o', 'de', porque elas não ajudam a entender o sentimento do texto.")
+    c1, c2 = st.columns(2)
+    
+    with c1:
+        with st.container(border=True):
+            st.info("🧩 **DBSCAN (Agrupamento por Densidade)**")
+            st.markdown("Diferente do K-Means, ele acha **outliers sozinho** e não precisa que você diga quantos grupos criar.")
+            st.code("# eps = distância máxima para ser vizinho\nfrom sklearn.cluster import DBSCAN\nmodelo = DBSCAN(eps=0.5, min_samples=5)", language="python")
+            
+        with st.container(border=True):
+            st.warning("⚖️ **Treino vs Teste (Overfitting)**")
+            st.markdown("Se um aluno decora o gabarito (Treino) ele tira 10. Mas se a prova tiver questões novas (Teste), ele tira 0. Isso é o **Overfitting**.")
+            st.code("X_train, X_test, y_train, y_test = \\\ntrain_test_split(X, y, test_size=0.2)", language="python")
+
+    with c2:
+        with st.container(border=True):
+            st.success("🎒 **A Jornada do Texto (NLP)**")
+            st.markdown("Como o computador lê a frase: *'A prova da FIAP é muito justa'*")
+            st.code(
+                "1. Tokenização: \n['A', 'prova', 'da', 'FIAP', 'é', ...]\n\n"
+                "2. Stop Words (jogar o lixo fora): \nRemove 'A', 'da', 'é'.\n\n"
+                "3. Bag of Words: \nConta o que sobrou: {'prova':1, 'FIAP':1}", 
+                language="python"
+            )
 
     st.divider()
-    st.subheader("📝 Desafio da Fase 2")
+    st.subheader("📝 Questões da Fase 2")
     pts2 = renderizar_questoes(fase2_ml, "f2")
 
-# ----------------- FASE 3 -----------------
+# ----------------- FASE 3: STORYTELLING -----------------
 with fase3:
-    st.header("Visualização e Jogo Final")
+    st.header("3. Data Storytelling e Negócios")
     
-    st.markdown("### 🎮 Mini-game: Ligue as Colunas")
-    st.write("Antes das perguntas, prove que seu reflexo está bom!")
-    
-    with st.container(border=True):
-        c1, c2 = st.columns(2)
-        with c1:
-            st.markdown("**1.** `axis=1`\n\n**2.** Storytelling\n\n**3.** `describe()`")
-        with c2:
-            r1 = st.selectbox("O que faz o axis=1?", ["Selecione...", "Mira nas colunas", "Conta historinha", "Traz a média"], label_visibility="collapsed")
-            r2 = st.selectbox("O que é Storytelling?", ["Selecione...", "Mira nas colunas", "Conta historinha", "Traz a média"], label_visibility="collapsed")
-            r3 = st.selectbox("O que faz o describe()?", ["Selecione...", "Mira nas colunas", "Conta historinha", "Traz a média"], label_visibility="collapsed")
-            
-            if r1 == "Mira nas colunas" and r2 == "Conta historinha" and r3 == "Traz a média":
-                st.success("✨ Triplo Acerto no Minigame!")
-    
+    c1, c2, c3 = st.columns(3)
+    with c1:
+        with st.container(border=True):
+            st.info("🗑️ **Declutter (Menos é Mais)**")
+            st.markdown("Remova fundos coloridos, bordas grossas e dezenas de linhas de grade. Deixe o **dado** respirar e brilhar.")
+    with c2:
+        with st.container(border=True):
+            st.warning("🧠 **Carga Cognitiva**")
+            st.markdown("Se o diretor precisa de 5 minutos para entender seu gráfico, a carga cognitiva está muito alta. Gráficos de pizza com 20 fatias são o maior exemplo disso.")
+    with c3:
+        with st.container(border=True):
+            st.success("🎨 **Uso da Cor**")
+            st.markdown("Não faça um 'arco-íris'. Use cores neutras (cinza) para o contexto geral e **uma cor forte** para destacar a informação principal.")
+
     st.divider()
-    st.subheader("📝 Desafio da Fase 3")
+    st.subheader("📝 Questões da Fase 3")
     pts3 = renderizar_questoes(fase3_story, "f3")
 
 # ==========================================
-# PAINEL DE PONTUAÇÃO GERAL (Na barra lateral)
+# PAINEL DE PONTUAÇÃO (BARRA LATERAL)
 # ==========================================
 total_pontos = pts1 + pts2 + pts3
 with st.sidebar:
-    st.header("🏆 Seu Placar")
-    st.metric(label="Fase 1 (Pandas)", value=f"{pts1}/10")
-    st.metric(label="Fase 2 (ML & NLP)", value=f"{pts2}/10")
-    st.metric(label="Fase 3 (Story)", value=f"{pts3}/10")
+    st.header("🏆 Seu Desempenho")
+    
+    # Estilizando os placares na lateral
+    st.metric(label="🐼 Pandas", value=f"{pts1}/10")
+    st.metric(label="🤖 ML & NLP", value=f"{pts2}/10")
+    st.metric(label="📊 Storytelling", value=f"{pts3}/10")
+    
     st.divider()
-    st.metric(label="PONTUAÇÃO TOTAL", value=f"{total_pontos}/30")
+    st.markdown(f"### Pontuação Final: **{total_pontos}/30**")
     
     if total_pontos == 30:
         st.success("PERFEITO! Você 'gabaritou' o simulado! 🎉")
         st.balloons()
     elif total_pontos > 20:
-        st.info("Mandou muito bem! Quase lá.")
+        st.info("Mandou muito bem! Quase lá. Continue revisando as dicas.")
+    elif total_pontos > 0:
+        st.warning("Você está no caminho! Leia os exemplos práticos antes de responder.")
