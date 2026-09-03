@@ -150,7 +150,7 @@ with st.sidebar:
     st.metric(label="PONTUAÇÃO TOTAL", value=f"{total_pontos}/30")
     
     if total_pontos == 30:
-        st.success("PERFEITO! Você "gabaritou" o simulado! 🎉")
+        st.success("PERFEITO! Você 'gabaritou' o simulado! 🎉")
         st.balloons()
     elif total_pontos > 20:
         st.info("Mandou muito bem! Quase lá.")
